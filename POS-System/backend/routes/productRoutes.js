@@ -26,7 +26,7 @@ const sendError = (res, err, status = 500) => {
   res.status(status).json({ error: err.message || 'Error interno del servidor' });
 };
 
-router.get('/health', (req, res) => res.json({ ok: true, modulo: 'catalogo-devani' }));
+router.get('/health', (req, res) => res.json({ ok: true, modulo: 'catalogo' }));
 
 // ---------- PRODUCTOS ----------
 router.get('/products', async (req, res) => {
