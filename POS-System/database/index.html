@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Plataforma de Grafos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="app-frame">
+    <header class="topbar">
+      <div class="brand-block">
+        <img src="/img/logo.svg" alt="Grafos" class="brand-logo">
+        <div>
+          <p class="eyebrow">Herramienta Visual</p>
+          <h1>Plataforma de Grafos</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="status-pill online"><span class="material-symbols-rounded">wifi</span> Online</span>
+        <button class="icon-button" id="btnFitMap" aria-label="Centrar lienzo"><span class="material-symbols-rounded">my_location</span></button>
+        <button class="icon-button" id="btnOpenControl" aria-label="Abrir panel"><span class="material-symbols-rounded">tune</span></button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel control-panel" id="controlPanel" data-active="true">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Panel operativo</p>
+            <h2>Ruta y algoritmo</h2>
+          </div>
+          <button class="icon-button only-mobile" id="btnCloseControl" aria-label="Cerrar panel"><span class="material-symbols-rounded">close</span></button>
+        </div>
+
+        <section class="metric-grid">
+          <article class="metric-card">
+            <span class="material-symbols-rounded">hub</span>
+            <strong id="metricNodes">0</strong>
+            <small>Nodos</small>
+          </article>
+          <article class="metric-card">
+            <span class="material-symbols-rounded">route</span>
+            <strong id="metricEdges">0</strong>
+            <small>Aristas</small>
+          </article>
+        </section>
+
+        <section class="soft-alert info-alert">
+          <span class="material-symbols-rounded">ads_click</span>
+          <div>
+            <strong>Selección rápida</strong>
+            <p>Usa Seleccionar para elegir origen/destino, Nodo para crear puntos y Arista para arrastrar una conexión entre dos nodos. El entorno es abstracto (X, Y).</p>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <div class="section-title">
+            <span class="material-symbols-rounded">pin_drop</span>
+            <h3>Nodos del grafo</h3>
+          </div>
+          <div class="node-selectors">
+            <label>
+              <span>Nodo origen</span>
+              <select id="originSelect"></select>
+            </label>
+            <label>
+              <span>Nodo destino</span>
+              <select id="destinationSelect"></select>
+            </label>
+          </div>
+          <button class="ghost-button" id="btnClearSelection"><span class="material-symbols-rounded">restart_alt</span> Limpiar selección</button>
+        </section>
+
+
+        <section class="form-card">
+          <div class="section-title">
+            <span class="material-symbols-rounded">conversion_path</span>
+            <h3>Agregar arista</h3>
+          </div>
+          <p class="muted">También puedes crearla desde el lienzo: modo Arista y arrastra de un nodo a otro.</p>
+          <div class="node-selectors">
+            <label>
+              <span>Desde</span>
+              <select id="edgeSourceSelect"></select>
+            </label>
+            <label>
+              <span>Hasta</span>
+              <select id="edgeTargetSelect"></select>
+            </label>
+          </div>
+          <label class="stacked-label">
+            <span>Peso</span>
+            <input type="number" id="edgeWeightInput" min="0" step="0.1" placeholder="Ej. 5">
+          </label>
+          <button class="ghost-button" id="btnAddEdgeManual"><span class="material-symbols-rounded">add_link</span> Agregar arista</button>
+        </section>
+
+        <section class="form-card">
+          <div class="section-title">
+            <span class="material-symbols-rounded">schema</span>
+            <h3>Motor algorítmico</h3>
+          </div>
+          <div class="chip-group" role="radiogroup" aria-label="Algoritmo">
+            <button class="chip active" data-algorithm="dijkstra">Dijkstra</button>
+            <button class="chip" data-algorithm="prim">Prim</button>
+            <button class="chip" data-algorithm="kruskal">Kruskal</button>
+          </div>
+          <label class="stacked-label">
+            <span>Criterio de optimización</span>
+            <select id="weightSelect">
+              <option value="distance">Distancia</option>
+              <option value="time">Tiempo</option>
+              <option value="cost">Costo</option>
+            </select>
+          </label>
+          <div class="toggle-list">
+            <label class="toggle-row"><span>Mostrar pesos</span><input type="checkbox" id="toggleWeights" checked></label>
+            <label class="toggle-row"><span>Mostrar grafo</span><input type="checkbox" id="toggleGraph" checked></label>
+          </div>
+          <button class="primary-button" id="btnRunAlgorithm"><span class="material-symbols-rounded">play_arrow</span> Calcular y trazar</button>
+        </section>
+
+        <section class="form-card import-card">
+          <div class="section-title">
+            <span class="material-symbols-rounded">upload_file</span>
+            <h3>Importar grafo JSON</h3>
+          </div>
+          <p class="muted">Acepta nodos (con x, y) y aristas con pesos.</p>
+          <input type="file" id="graphFile" accept="application/json,.json">
+        </section>
+      </aside>
+
+      <section class="map-column" aria-label="Lienzo de Grafo">
+        <div class="map-toolbar glass-card">
+          <div>
+            <p class="eyebrow">Lienzo activo</p>
+            <strong id="currentInstruction">Selecciona origen y destino</strong>
+          </div>
+          <span class="status-pill" id="algorithmStatus"><span class="material-symbols-rounded">bolt</span> Dijkstra</span>
+        </div>
+        
+        <div id="graph-container"></div>
+        
+        <div class="floating-card quick-result" id="floatingResult">
+          <span class="material-symbols-rounded">insights</span>
+          <div>
+            <strong>Sin cálculo activo</strong>
+            <small>Ejecuta un algoritmo para trazar el resultado.</small>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel results-panel" id="resultsPanel">
+        <section class="result-summary-card">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">Resultados</p>
+              <h2 id="resultTitle">Sin ejecución</h2>
+            </div>
+            <button class="icon-button" id="btnDownloadResult" aria-label="Descargar resultado"><span class="material-symbols-rounded">download</span></button>
+          </div>
+          <p id="resultMessage" class="muted">Calcula una ruta o un árbol mínimo para visualizar métricas y trazado.</p>
+          <div class="result-stats">
+            <div><span>Costo total</span><strong id="statCost">—</strong></div>
+            <div><span>Nodos visitados</span><strong id="statVisited">—</strong></div>
+            <div><span>Tiempo</span><strong id="statTime">—</strong></div>
+          </div>
+        </section>
+
+        <section class="explain-card">
+          <h3><span class="material-symbols-rounded">school</span> Interpretación</h3>
+          <p id="algorithmExplanation">Dijkstra traza la ruta mínima entre origen y destino. Prim y Kruskal resaltan el árbol de expansión mínima sobre el grafo.</p>
+        </section>
+
+        <section class="timeline-card">
+          <div class="section-title between">
+            <h3>Cronología</h3>
+            <button class="link-button" id="btnRefreshHistory">Actualizar</button>
+          </div>
+          <div id="historyList" class="timeline-list"></div>
+        </section>
+      </aside>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegación móvil">
+      <button class="nav-item active" data-nav="map"><span class="material-symbols-rounded">polyline</span><small>Lienzo</small></button>
+      <button class="nav-item" data-nav="controls"><span class="material-symbols-rounded">tune</span><small>Control</small></button>
+      <button class="nav-item" data-nav="history"><span class="material-symbols-rounded">history</span><small>Historial</small></button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
