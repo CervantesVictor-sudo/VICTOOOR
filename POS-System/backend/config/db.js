@@ -1,25 +1,10 @@
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
-<<<<<<< HEAD
-
-const dbPath = path.join(__dirname, '..', '..', 'database', 'TIENDA.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) console.error('Error al conectar con TIENDA.db:', err.message);
-  else console.log('Base de datos conectada:', dbPath);
-});
-
-db.serialize(() => {
-  db.run('PRAGMA foreign_keys = ON');
-});
-
-module.exports = db;
-=======
-const path = require('path');
 
 // Aseguramos la ruta absoluta hacia la base de datos
 const dbPath = path.join(__dirname, '../database/TIENDA.db');
 
-// Inicializamos la conexión a SQLite
+// Inicializamos la conexión única a SQLite
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos TIENDA.db:', err.message);
@@ -82,36 +67,3 @@ module.exports = {
     commit,
     rollback
 };
-
-/* =====================================================================
- * EJEMPLO DE USO PARA EL EQUIPO (Pueden borrar esto después de leerlo)
- * =====================================================================
- * * Este es el patrón estándar que todos deben usar en sus controladores
- * (controllers) para operaciones que modifican más de una tabla a la vez.
- * * const { queryRun, beginTransaction, commit, rollback } = require('../config/db');
- * * const procesarVentaCompleja = async (req, res) => {
- * try {
- * // 1. Iniciamos la transacción (Bloquea los datos para mantener integridad)
- * await beginTransaction();
- * * // 2. Ejecutamos las consultas secuenciales
- * const venta = await queryRun(
- * 'INSERT INTO Ventas (id_cliente, id_empleado, total) VALUES (?, ?, ?)', 
- * [1, 2, 500.00]
- * );
- * * await queryRun(
- * 'UPDATE Producto SET stock = stock - ? WHERE id_producto = ?',
- * [2, 10]
- * );
- * * // 3. Si todo salió perfecto, consolidamos los cambios en la DB
- * await commit();
- * res.status(200).json({ message: 'Venta procesada con éxito', idVenta: venta.lastID });
- * * } catch (error) {
- * // 4. Si CUALQUIER consulta falla, deshacemos TODO lo hecho en este bloque
- * await rollback();
- * console.error('Error en la transacción, aplicando rollback:', error);
- * res.status(500).json({ error: 'Fallo al procesar la operación.' });
- * }
- * };
- * =====================================================================
- */
->>>>>>> 1634d6ea6c4eafb5ab6b8e0e55786bd4f56b814c
