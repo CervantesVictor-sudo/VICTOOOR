@@ -1,18 +1,20 @@
 const express = require('express');
 const app = express();
 
-app.listen(3000, () => console.log('Servidor corriendo'));
-
-// ... (arriba queda todo igual)
-
-// Importación de Rutas
+// 1. Importación de Rutas
 const productRoutes = require('./routes/productRoutes');
-const authRoutes = require('./routes/authRoutes'); 
-const salesRoutes = require('./routes/salesRoutes'); // <-- 1. Agregamos esta línea
+const authRoutes = require('./routes/authRoutes');
+const salesRoutes = require('./routes/salesRoutes');
 
-// Enrutamiento de la API
+// 2. Middlewares
+app.use(express.json());
+
+// 3. Enrutamiento de la API
 app.use('/api/products', productRoutes);
-app.use('/api/auth', authRoutes); 
-app.use('/api/sales', salesRoutes); // <-- 2. Y exponemos el endpoint aquí
+app.use('/api/auth', authRoutes);
+app.use('/api/sales', salesRoutes);
 
-// ... (abajo queda todo igual)
+// 4. AL FINAL DEL TODO: Encendemos el motor
+app.listen(3000, () => {
+    console.log('Servidor corriendo en el puerto 3000');
+});

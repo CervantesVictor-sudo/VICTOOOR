@@ -4,6 +4,7 @@ const procesarVenta = async (req, res) => {
     // 1. Extraemos los datos de la petición (del frontend) y del token (req.usuario)
     let { id_cliente, metodo_pago, descuento, productos } = req.body;
     const { id_usuario, id_empleado } = req.usuario; 
+    // const { id_usuario, id_empleado } = req.usuario; <-- La comentamos
 
     // Validaciones iniciales
     if (!productos || productos.length === 0) {
