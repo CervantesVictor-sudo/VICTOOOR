@@ -5,6 +5,7 @@ const app = express();
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const salesRoutes = require('./routes/salesRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 // 2. Middlewares
 app.use(express.json());
@@ -13,6 +14,8 @@ app.use(express.json());
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/sales', salesRoutes);
+app.use('/api/inventory', inventoryRoutes);
+
 
 // 4. AL FINAL DEL TODO: Encendemos el motor
 app.listen(3000, () => {

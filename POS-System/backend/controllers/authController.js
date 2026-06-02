@@ -66,12 +66,22 @@ const login = async (req, res) => {
         // 1. Buscar al usuario por su username
         const usuario = await queryGet('SELECT * FROM Usuario WHERE username = ? AND activo = 1', [username]);
         
+        // CHISMOSO 1: Ver qué nos devolvió la base de datos
+        console.log("=== DIAGNÓSTICO DE LOGIN ===");
+        console.log("Datos del usuario encontrados en BD:", usuario);
+
         if (!usuario) {
-            return res.status(401).json({ error: 'Credenciales inválidas o usuario inactivo.' });
+            return res.status(401).json({ error: 'Credenciales inválidas o usuario inactivo (Falló la consulta SQL).' });
         }
+
+        // CHISMOSO 2: Ver cómo está guardada la contraseña en la base de datos
+        console.log("Contraseña plana recibida de Thunder Client:", password);
+        console.log("Hash guardado en la BD:", usuario.password_hash);
+        console.log("============================");
 
         // 2. Comparar la contraseña ingresada con el hash guardado
         const passwordValido = await bcrypt.compare(password, usuario.password_hash);
+        
         if (!passwordValido) {
             return res.status(401).json({ error: 'Credenciales inválidas.' });
         }
