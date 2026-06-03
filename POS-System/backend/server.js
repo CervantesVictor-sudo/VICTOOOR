@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const compraRoutes = require('./routes/compraRoutes');
+const auditRoutes = require('./routes/auditRoutes'); // ← NUEVO T-4.1
 
 // 2. Middlewares
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/compras', compraRoutes);
+app.use('/api/auditoria', auditRoutes); // ← NUEVO T-4.1
 
 // 4. AL FINAL DEL TODO: Encendemos el motor
 app.listen(3000, () => {

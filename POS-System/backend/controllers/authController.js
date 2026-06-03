@@ -1,8 +1,14 @@
+/**
+ * TAREA 4.1 — authController.js MODIFICADO
+ * Cambios: Se reemplazó el INSERT manual a Auditoria por registrarAccion()
+ *          Se agregó auditoría en intentos de login fallidos
+ */
+
 const { queryRun, queryGet, beginTransaction, commit, rollback } = require('../config/db');
+const { registrarAccion, snapshot } = require('../utils/auditService'); // ← NUEVO
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// En producción, esto debe venir de un archivo .env
 const JWT_SECRET = process.env.JWT_SECRET || 'secreto_super_seguro_para_desarrollo_pos'; 
 
 const registrarUsuario = async (req, res) => {
@@ -15,35 +21,35 @@ const registrarUsuario = async (req, res) => {
     try {
         await beginTransaction();
 
-        // 1. Validar que el empleado exista en la base de datos
         const empleado = await queryGet('SELECT id_empleado FROM Empleado WHERE id_empleado = ?', [id_empleado]);
         if (!empleado) {
             await rollback();
             return res.status(404).json({ error: 'El empleado indicado no existe.' });
         }
 
-        // 2. Validar que el nombre de usuario no esté ocupado
         const usuarioExistente = await queryGet('SELECT id_usuario FROM Usuario WHERE username = ?', [username]);
         if (usuarioExistente) {
             await rollback();
             return res.status(400).json({ error: 'El nombre de usuario ya está en uso.' });
         }
 
-        // 3. Encriptar (hashear) la contraseña
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
-        // 4. Insertar el usuario en la base de datos
         const resultadoUsuario = await queryRun(
             'INSERT INTO Usuario (id_empleado, username, password_hash, rol) VALUES (?, ?, ?, ?)',
             [id_empleado, username, password_hash, rol]
         );
 
-        // 5. Registrar el evento en la Auditoría
-        await queryRun(
-            'INSERT INTO Auditoria (id_usuario, accion, tabla_afectada, registro_id) VALUES (?, ?, ?, ?)',
-            [resultadoUsuario.lastID, 'REGISTRO_USUARIO', 'Usuario', resultadoUsuario.lastID]
-        );
+        // ← AUDITORÍA MEJORADA (dentro de la transacción)
+        await registrarAccion({
+            idUsuario: resultadoUsuario.lastID,
+            accion: 'REGISTRO_USUARIO',
+            tablaAfectada: 'Usuario',
+            registroId: resultadoUsuario.lastID,
+            datosNuevos: { id_usuario: resultadoUsuario.lastID, username, rol, id_empleado },
+            observaciones: `Usuario "${username}" registrado con rol "${rol}"`
+        });
 
         await commit();
         res.status(201).json({ message: 'Usuario registrado exitosamente', id_usuario: resultadoUsuario.lastID });
@@ -63,54 +69,53 @@ const login = async (req, res) => {
     }
 
     try {
-        // 1. Buscar al usuario por su username
         const usuario = await queryGet('SELECT * FROM Usuario WHERE username = ? AND activo = 1', [username]);
-        
-        // CHISMOSO 1: Ver qué nos devolvió la base de datos
-        console.log("=== DIAGNÓSTICO DE LOGIN ===");
-        console.log("Datos del usuario encontrados en BD:", usuario);
 
         if (!usuario) {
-            return res.status(401).json({ error: 'Credenciales inválidas o usuario inactivo (Falló la consulta SQL).' });
+            // ← NUEVO: Auditar intentos fallidos
+            await registrarAccion({
+                idUsuario: null,
+                accion: 'LOGIN_FALLIDO',
+                tablaAfectada: 'Usuario',
+                observaciones: `Intento con username inexistente: "${username}"`
+            });
+            return res.status(401).json({ error: 'Credenciales inválidas o usuario inactivo.' });
         }
 
-        // CHISMOSO 2: Ver cómo está guardada la contraseña en la base de datos
-        console.log("Contraseña plana recibida de Thunder Client:", password);
-        console.log("Hash guardado en la BD:", usuario.password_hash);
-        console.log("============================");
-
-        // 2. Comparar la contraseña ingresada con el hash guardado
         const passwordValido = await bcrypt.compare(password, usuario.password_hash);
         
         if (!passwordValido) {
+            // ← NUEVO: Auditar contraseña incorrecta
+            await registrarAccion({
+                idUsuario: usuario.id_usuario,
+                accion: 'LOGIN_FALLIDO',
+                tablaAfectada: 'Usuario',
+                registroId: usuario.id_usuario,
+                observaciones: 'Contraseña incorrecta'
+            });
             return res.status(401).json({ error: 'Credenciales inválidas.' });
         }
 
-        // 3. Generar el JSON Web Token (JWT)
         const token = jwt.sign(
-            {
-                id_usuario: usuario.id_usuario,
-                id_empleado: usuario.id_empleado,
-                rol: usuario.rol
-            },
+            { id_usuario: usuario.id_usuario, id_empleado: usuario.id_empleado, rol: usuario.rol },
             JWT_SECRET,
-            { expiresIn: '8h' } // El token dura un turno laboral de 8 horas
+            { expiresIn: '8h' }
         );
 
-        // 4. Registrar el inicio de sesión en Auditoría
-        await queryRun(
-            'INSERT INTO Auditoria (id_usuario, accion, tabla_afectada, registro_id) VALUES (?, ?, ?, ?)',
-            [usuario.id_usuario, 'LOGIN', 'Usuario', usuario.id_usuario]
-        );
+        // ← AUDITORÍA MEJORADA: Login exitoso con datos_nuevos
+        await registrarAccion({
+            idUsuario: usuario.id_usuario,
+            accion: 'LOGIN',
+            tablaAfectada: 'Usuario',
+            registroId: usuario.id_usuario,
+            datosNuevos: { username: usuario.username, rol: usuario.rol },
+            observaciones: 'Inicio de sesión exitoso'
+        });
 
         res.status(200).json({
             message: 'Inicio de sesión exitoso.',
             token,
-            usuario: {
-                id_usuario: usuario.id_usuario,
-                username: usuario.username,
-                rol: usuario.rol
-            }
+            usuario: { id_usuario: usuario.id_usuario, username: usuario.username, rol: usuario.rol }
         });
 
     } catch (error) {
@@ -119,7 +124,4 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = {
-    registrarUsuario,
-    login
-};
+module.exports = { registrarUsuario, login };
