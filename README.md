@@ -10,8 +10,8 @@ Proyecto final de la materia del Laboratorio de Base de Datos.
 |---|---|
 | **Asaf** | Fase 0 (limpieza y preparación), Core transaccional de ventas (T-2.2) |
 | **Devani** | CRUD catálogo y categorías (T-1.2), Escáner óptico de códigos (T-2.1) |
-| **Víctor** | Bitácora de auditoría (T-4.1) Dashboard gerencial (T-4.2)|
-| **Martin** | Inventario automático y alertas (T-3.1), Compras a proveedores (T-3.2), Dashboard gerencial (T-4.2) |
+| **Víctor** | Bitácora de auditoría (T-4.1) Dashboard gerencial (T-4.2) |
+| **Martin** | Inventario automático y alertas (T-3.1), Compras a proveedores (T-3.2) |
 
 ## Stack tecnológico
 
