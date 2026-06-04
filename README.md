@@ -8,7 +8,7 @@ Proyecto final de la materia del Laboratorio de Base de Datos.
 
 | Integrante | Tareas principales |
 |---|---|
-| **Asaf** | Fase 0 (limpieza y preparación), Core transaccional de ventas (T-2.2) |
+| **Asaf** | Inicialización del entorno, dependencias de Node.js y arquitectura base (T-0.1), Diseño, modelado y migración de la base de datos en SQLite (T-0.2), Sistema de autenticación con JWT y bcryptjs (T-1.1), Core transaccional de ventas (T-2.2) |
 | **Devani** | CRUD catálogo y categorías (T-1.2), Escáner óptico de códigos (T-2.1) |
 | **Víctor** | Bitácora de auditoría (T-4.1) Dashboard gerencial (T-4.2) |
 | **Martin** | Inventario automático y alertas (T-3.1), Compras a proveedores (T-3.2) |
